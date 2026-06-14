@@ -383,3 +383,147 @@ export interface DeletePayload {
   root: string; // parent directory
   files: string[]; // filenames (not full paths)
 }
+
+// ── Theme Configurations ──────────────────────────────────────────────
+
+export interface IdeThemeConfig {
+  monaco: string;
+  variables: Record<string, string>;
+}
+
+export const THEMES: Record<string, IdeThemeConfig> = {
+  'vs-dark': {
+    monaco: 'vs-dark',
+    variables: {
+      '--ide-bg': '#1e1e1e',
+      '--ide-sidebar-bg': '#252526',
+      '--ide-panel-bg': '#1e1e1e',
+      '--ide-border': '#3c3c3c',
+      '--ide-border-subtle': '#2d2d2d',
+      '--ide-accent': '#0078d4',
+      '--ide-accent-hover': '#1a8ad4',
+      '--ide-text': '#cccccc',
+      '--ide-text-muted': '#858585',
+      '--ide-tab-bg': '#2d2d2d',
+      '--ide-tab-active-bg': '#1e1e1e',
+      '--ide-hover-bg': '#2a2d2e',
+      '--ide-active-bg': '#37373d',
+      '--ide-console-bg': '#1e1e1e',
+      '--ide-console-header': '#252526',
+      '--ide-statusbar-bg': '#007acc',
+    }
+  },
+  'vs-light': {
+    monaco: 'vs',
+    variables: {
+      '--ide-bg': '#ffffff',
+      '--ide-sidebar-bg': '#f3f3f3',
+      '--ide-panel-bg': '#ffffff',
+      '--ide-border': '#e4e4e4',
+      '--ide-border-subtle': '#d4d4d4',
+      '--ide-accent': '#007acc',
+      '--ide-accent-hover': '#0062a3',
+      '--ide-text': '#333333',
+      '--ide-text-muted': '#6c6c6c',
+      '--ide-tab-bg': '#ececec',
+      '--ide-tab-active-bg': '#ffffff',
+      '--ide-hover-bg': '#e4e4e4',
+      '--ide-active-bg': '#d4d4d4',
+      '--ide-console-bg': '#f3f3f3',
+      '--ide-console-header': '#ececec',
+      '--ide-statusbar-bg': '#007acc',
+    }
+  },
+  'dracula': {
+    monaco: 'vs-dark',
+    variables: {
+      '--ide-bg': '#282a36',
+      '--ide-sidebar-bg': '#21222c',
+      '--ide-panel-bg': '#282a36',
+      '--ide-border': '#44475a',
+      '--ide-border-subtle': '#343746',
+      '--ide-accent': '#bd93f9',
+      '--ide-accent-hover': '#ff79c6',
+      '--ide-text': '#f8f8f2',
+      '--ide-text-muted': '#6272a4',
+      '--ide-tab-bg': '#1e1f29',
+      '--ide-tab-active-bg': '#282a36',
+      '--ide-hover-bg': '#44475a',
+      '--ide-active-bg': '#343746',
+      '--ide-console-bg': '#282a36',
+      '--ide-console-header': '#21222c',
+      '--ide-statusbar-bg': '#6272a4',
+    }
+  },
+  'one-dark': {
+    monaco: 'vs-dark',
+    variables: {
+      '--ide-bg': '#282c34',
+      '--ide-sidebar-bg': '#21252b',
+      '--ide-panel-bg': '#282c34',
+      '--ide-border': '#3e4451',
+      '--ide-border-subtle': '#2c313c',
+      '--ide-accent': '#61afef',
+      '--ide-accent-hover': '#98c379',
+      '--ide-text': '#abb2bf',
+      '--ide-text-muted': '#5c6370',
+      '--ide-tab-bg': '#21252b',
+      '--ide-tab-active-bg': '#282c34',
+      '--ide-hover-bg': '#3e4451',
+      '--ide-active-bg': '#2c313c',
+      '--ide-console-bg': '#282c34',
+      '--ide-console-header': '#21252b',
+      '--ide-statusbar-bg': '#4b5263',
+    }
+  },
+  'github-dark': {
+    monaco: 'vs-dark',
+    variables: {
+      '--ide-bg': '#0d1117',
+      '--ide-sidebar-bg': '#161b22',
+      '--ide-panel-bg': '#0d1117',
+      '--ide-border': '#30363d',
+      '--ide-border-subtle': '#21262d',
+      '--ide-accent': '#58a6ff',
+      '--ide-accent-hover': '#1f6feb',
+      '--ide-text': '#c9d1d9',
+      '--ide-text-muted': '#8b949e',
+      '--ide-tab-bg': '#161b22',
+      '--ide-tab-active-bg': '#0d1117',
+      '--ide-hover-bg': '#30363d',
+      '--ide-active-bg': '#21262d',
+      '--ide-console-bg': '#0d1117',
+      '--ide-console-header': '#161b22',
+      '--ide-statusbar-bg': '#21262d',
+    }
+  },
+  'monokai': {
+    monaco: 'vs-dark',
+    variables: {
+      '--ide-bg': '#272822',
+      '--ide-sidebar-bg': '#1e1f1c',
+      '--ide-panel-bg': '#272822',
+      '--ide-border': '#3e3d32',
+      '--ide-border-subtle': '#2f2e27',
+      '--ide-accent': '#a6e22e',
+      '--ide-accent-hover': '#f92672',
+      '--ide-text': '#f8f8f2',
+      '--ide-text-muted': '#75715e',
+      '--ide-tab-bg': '#1e1f1c',
+      '--ide-tab-active-bg': '#272822',
+      '--ide-hover-bg': '#3e3d32',
+      '--ide-active-bg': '#2f2e27',
+      '--ide-console-bg': '#272822',
+      '--ide-console-header': '#1e1f1c',
+      '--ide-statusbar-bg': '#49483e',
+    }
+  }
+};
+
+export function applyTheme(themeName: string) {
+  const theme = THEMES[themeName] || THEMES['vs-dark'];
+  Object.entries(theme.variables).forEach(([key, val]) => {
+    document.documentElement.style.setProperty(key, val);
+  });
+}
+

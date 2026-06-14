@@ -20,72 +20,26 @@ interface Props {
   onToggleMode: () => void;
 }
 
-const MediaViewer: React.FC<{
-  serverId: string;
-  path: string;
-  fileName: string;
-}> = ({ serverId, path, fileName }) => {
+const MediaViewer: React.FC<{ serverId: string; path: string; fileName: string }> = ({ serverId, path, fileName }) => {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     http
-      .get(`/api/client/servers/${serverId}/files/download`, {
-        params: { file: path },
-      })
+      .get(`/api/client/servers/${serverId}/files/download`, { params: { file: path } })
       .then((res) => setUrl(res.data.attributes?.url ?? res.data.data?.url ?? res.data.url ?? res.data))
       .catch(() => setUrl('error'));
   }, [serverId, path]);
-  if (!url)
-    return (
-      <div className='ide-editor-loading'>
-        <span className='ide-spinner' />
-        <span>Loading media…</span>
-      </div>
-    );
+  if (!url) return <div className='ide-editor-loading'><span className='ide-spinner' /><span>Loading media…</span></div>;
   if (url === 'error') return <div className='ide-editor-incompatible'>Failed to load media URL.</div>;
   if (isVideo(fileName)) {
     return (
-      <div
-        style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#111',
-        }}
-      >
-        <video
-          src={url}
-          controls
-          style={{
-            maxWidth: '90%',
-            maxHeight: '90%',
-            outline: 'none',
-          }}
-        />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111' }}>
+        <video src={url} controls style={{ maxWidth: '90%', maxHeight: '90%', outline: 'none' }} />
       </div>
     );
   }
   return (
-    <div
-      style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#111',
-        overflow: 'auto',
-        padding: '20px',
-      }}
-    >
-      <img
-        src={url}
-        alt={fileName}
-        style={{
-          maxWidth: '100%',
-          objectFit: 'contain',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-        }}
-      />
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111', overflow: 'auto', padding: '20px' }}>
+      <img src={url} alt={fileName} style={{ maxWidth: '100%', objectFit: 'contain', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }} />
     </div>
   );
 };
@@ -94,45 +48,22 @@ const MONACO_CDN = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs';
 const MONACO_BASE = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/';
 
 const LANG_MAP: Record<string, string> = {
-  javascript: 'javascript',
-  typescript: 'typescript',
-  json: 'json',
-  yaml: 'yaml',
-  xml: 'xml',
-  html: 'html',
-  css: 'css',
-  php: 'php',
-  python: 'python',
-  bash: 'shell',
-  ini: 'ini',
-  properties: 'ini',
-  markdown: 'markdown',
-  plaintext: 'plaintext',
-  java: 'java',
-  lua: 'lua',
-  sql: 'sql',
-  toml: 'ini',
-  dockerfile: 'dockerfile',
-  rust: 'rust',
-  go: 'go',
-  csharp: 'csharp',
-  cpp: 'cpp',
+  javascript: 'javascript', typescript: 'typescript', json: 'json', yaml: 'yaml',
+  xml: 'xml', html: 'html', css: 'css', php: 'php', python: 'python', bash: 'shell',
+  ini: 'ini', properties: 'ini', markdown: 'markdown', plaintext: 'plaintext',
+  java: 'java', lua: 'lua', sql: 'sql', toml: 'ini', dockerfile: 'dockerfile',
+  rust: 'rust', go: 'go', csharp: 'csharp', cpp: 'cpp',
 };
 
 let monacoReady: Promise<void> | null = null;
 function loadMonaco(): Promise<void> {
   if (monacoReady) return monacoReady;
   monacoReady = new Promise<void>((resolve, reject) => {
-    if ((window as any).monaco) {
-      resolve();
-      return;
-    }
+    if ((window as any).monaco) { resolve(); return; }
     (window as any).MonacoEnvironment = {
       getWorkerUrl(_: string, _label: string) {
         const workerUrl = `${MONACO_CDN}/base/worker/workerMain.js`;
-        const blob = new Blob([`self.MonacoEnvironment={baseUrl:'${MONACO_BASE}'};importScripts('${workerUrl}');`], {
-          type: 'application/javascript',
-        });
+        const blob = new Blob([`self.MonacoEnvironment={baseUrl:'${MONACO_BASE}'};importScripts('${workerUrl}');`], { type: 'application/javascript' });
         return URL.createObjectURL(blob);
       },
     };
@@ -149,15 +80,50 @@ function loadMonaco(): Promise<void> {
   return monacoReady;
 }
 
+// ── Power button tab component ──
+const PowerTab: React.FC<{
+  label: string;
+  icon: string;
+  color: string;
+  bg: string;
+  onClick: () => void;
+}> = ({ label, icon, color, bg, onClick }) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      className='ide-power-tab'
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        height: '100%',
+        padding: '0 14px',
+        background: hover ? bg : 'transparent',
+        color: hover ? color : 'var(--ide-text-muted)',
+        border: 'none',
+        borderLeft: '1px solid var(--ide-border)',
+        cursor: 'pointer',
+        fontSize: '12px',
+        fontWeight: 600,
+        fontFamily: 'var(--ide-font-ui)',
+        letterSpacing: '0.04em',
+        textTransform: 'uppercase',
+        transition: 'background 0.12s, color 0.12s',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <i className={`bi ${icon}`} style={{ fontSize: '14px' }}></i>
+      {label}
+    </button>
+  );
+};
+
 const FileEditorTabs: React.FC<Props> = ({
-  tabs,
-  activeTabId,
-  onSelectTab,
-  onCloseTab,
-  onUpdateContent,
-  onSaved,
-  onTabContentLoaded,
-  onToggleMode,
+  tabs, activeTabId, onSelectTab, onCloseTab,
+  onUpdateContent, onSaved, onTabContentLoaded, onToggleMode,
 }) => {
   const { id: serverId } = useParams<{ id: string }>();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -168,18 +134,24 @@ const FileEditorTabs: React.FC<Props> = ({
   const [ready, setReady] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'ok' | 'err'>('idle');
-  const [theme, setTheme] = useState('vs-dark');
+  const [theme, setTheme] = useState(() => {
+    const t = localStorage.getItem('ide-theme') || 'vs-dark';
+    return t === 'vs-light' ? 'vs' : 'vs-dark';
+  });
+
+  useEffect(() => {
+    const h = () => {
+      const t = localStorage.getItem('ide-theme') || 'vs-dark';
+      setTheme(t === 'vs-light' ? 'vs' : 'vs-dark');
+    };
+    window.addEventListener('ide-theme-change', h);
+    return () => window.removeEventListener('ide-theme-change', h);
+  }, []);
 
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? null;
 
-  // ── 1. Load Monaco ──
-  useEffect(() => {
-    loadMonaco()
-      .then(() => setReady(true))
-      .catch(console.error);
-  }, []);
+  useEffect(() => { loadMonaco().then(() => setReady(true)).catch(console.error); }, []);
 
-  // ── 2. Create editor once ──
   useEffect(() => {
     if (!ready || !containerRef.current || editorRef.current) return;
     const monaco = (window as any).monaco;
@@ -216,7 +188,6 @@ const FileEditorTabs: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  // ── 3. Switch model on tab change ──
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor || !ready || !activeTab) return;
@@ -239,49 +210,33 @@ const FileEditorTabs: React.FC<Props> = ({
     if (editor.getModel() !== model) editor.setModel(model);
   }, [activeTab?.id, activeTab?.isLoading, activeTab?.content, ready]);
 
-  // Theme change
   useEffect(() => {
     if (!ready) return;
     (window as any).monaco?.editor.setTheme(theme);
   }, [theme, ready]);
 
-  // Dispose closed tab models
   useEffect(() => {
     const open = new Set(tabs.map((t) => t.path));
     models.current.forEach((m, path) => {
-      if (!open.has(path)) {
-        m.dispose();
-        models.current.delete(path);
-      }
+      if (!open.has(path)) { m.dispose(); models.current.delete(path); }
     });
   }, [tabs]);
 
-  // ── 4. Load file content ──
   useEffect(() => {
     if (!activeTab?.isLoading) return;
-    if (isBinaryFile(activeTab.name)) {
-      onTabContentLoaded(activeTab.id, null);
-      return;
-    }
+    if (isBinaryFile(activeTab.name)) { onTabContentLoaded(activeTab.id, null); return; }
     http
       .get(`/api/client/servers/${serverId}/files/contents`, {
         params: { file: activeTab.path },
         responseType: 'text',
         transformResponse: [(d) => d],
       })
-      .then(({ data }) => {
-        onTabContentLoaded(activeTab.id, data as unknown as string);
-      })
-      .catch(() => {
-        onTabContentLoaded(activeTab.id, `// Error loading file: ${activeTab.path}`);
-      });
+      .then(({ data }) => onTabContentLoaded(activeTab.id, data as unknown as string))
+      .catch(() => onTabContentLoaded(activeTab.id, `// Error loading file: ${activeTab.path}`));
   }, [activeTab?.id, activeTab?.isLoading]);
 
-  useEffect(() => {
-    setSaveStatus('idle');
-  }, [activeTabId]);
+  useEffect(() => { setSaveStatus('idle'); }, [activeTabId]);
 
-  // ── 5. Save ──
   const doSave = useCallback(async () => {
     const tab = activeTab;
     if (!tab || isBinaryFile(tab.name)) return;
@@ -304,192 +259,78 @@ const FileEditorTabs: React.FC<Props> = ({
   }, [activeTab, serverId, onSaved]);
 
   const handleTabMouse = (e: React.MouseEvent, id: string) => {
-    if (e.button === 1) {
-      e.preventDefault();
-      onCloseTab(id);
-    }
+    if (e.button === 1) { e.preventDefault(); onCloseTab(id); }
   };
+
+  const power = (signal: string) =>
+    http.post(`/api/client/servers/${serverId}/power`, { signal });
 
   const lang = activeTab ? getLanguage(activeTab.name) : 'plaintext';
   const isBinary = activeTab ? isBinaryFile(activeTab.name) : false;
   const lineCount = activeTab?.content?.split('\n').length ?? 0;
   const showEditor = activeTab && !activeTab.isLoading && !isBinary;
 
+  // ── Shared right section (switch + power tabs) ──
+  const RightActions = () => (
+    <div style={{ display: 'flex', alignItems: 'stretch', height: '100%', marginLeft: 'auto' }}>
+      {/* Switch to classic */}
+      <button
+        onClick={onToggleMode}
+        title='Switch to Classic Mode'
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          height: '100%',
+          padding: '0 14px',
+          background: 'transparent',
+          color: 'var(--ide-text-muted)',
+          border: 'none',
+          borderLeft: '1px solid var(--ide-border)',
+          cursor: 'pointer',
+          fontSize: '12px',
+          fontFamily: 'var(--ide-font-ui)',
+          transition: 'color 0.12s',
+        }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--ide-text)'; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--ide-text-muted)'; }}
+      >
+        <i className='bi bi-layout-text-sidebar' style={{ fontSize: '15px' }}></i>
+        <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Classic</span>
+      </button>
+
+      {/* Power tabs */}
+      <PowerTab label='Start'   icon='bi-play-fill'      color='#4ec994' bg='rgba(78,201,148,0.15)'   onClick={() => power('start')} />
+      <PowerTab label='Restart' icon='bi-arrow-clockwise' color='#729fcf' bg='rgba(114,159,207,0.15)' onClick={() => power('restart')} />
+      <PowerTab label='Stop'    icon='bi-stop-fill'      color='#f48771' bg='rgba(244,135,113,0.15)'   onClick={() => power('stop')} />
+    </div>
+  );
+
   return (
     <div className='ide-editor-panel'>
       {/* ── Tab bar ── */}
-      {tabs.length > 0 ? (
-        <div className='ide-tabbar'>
-          {tabs.map((tab) => (
+      <div className='ide-tabbar'>
+        {tabs.length > 0 ? (
+          tabs.map((tab) => (
             <div
               key={tab.id}
-              className={[
-                'ide-tab',
-                tab.id === activeTabId ? 'ide-tab--active' : '',
-                tab.isDirty ? 'ide-tab--dirty' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
+              className={['ide-tab', tab.id === activeTabId ? 'ide-tab--active' : '', tab.isDirty ? 'ide-tab--dirty' : ''].filter(Boolean).join(' ')}
               onClick={() => onSelectTab(tab.id)}
               onMouseDown={(e) => handleTabMouse(e, tab.id)}
               title={tab.path}
             >
               <span className='ide-tab__name'>{tab.name}</span>
               {tab.isDirty && <span className='ide-tab__dot' />}
-              <button
-                className='ide-tab__close'
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCloseTab(tab.id);
-                }}
-                title='Close'
-              >
+              <button className='ide-tab__close' onClick={(e) => { e.stopPropagation(); onCloseTab(tab.id); }} title='Close'>
                 <i className='bi bi-x'></i>
               </button>
             </div>
-          ))}
-          <div className='ide-tabbar__spacer' />
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '0 12px',
-              borderLeft: '1px solid var(--ide-border)',
-            }}
-          >
-            <button
-              className='ide-statusbar__save-btn'
-              onClick={onToggleMode}
-              style={{
-                background: 'var(--ide-panel-bg)',
-                border: '1px solid var(--ide-border)',
-                marginRight: '8px',
-              }}
-              title='Switch to Classic Mode'
-            >
-              <i className='bi bi-box-arrow-right'></i>
-            </button>
-            <button
-              className='ide-statusbar__save-btn'
-              onClick={() =>
-                http.post(`/api/client/servers/${serverId}/power`, {
-                  signal: 'start',
-                })
-              }
-              style={{
-                background: 'rgba(78,201,148,.2)',
-                color: '#4ec994',
-              }}
-              title='Start Server'
-            >
-              <i className='bi bi-play-fill'></i>
-            </button>
-            <button
-              className='ide-statusbar__save-btn'
-              onClick={() =>
-                http.post(`/api/client/servers/${serverId}/power`, {
-                  signal: 'restart',
-                })
-              }
-              style={{
-                background: 'rgba(52,101,164,.2)',
-                color: '#729fcf',
-              }}
-              title='Restart Server'
-            >
-              <i className='bi bi-arrow-clockwise'></i>
-            </button>
-            <button
-              className='ide-statusbar__save-btn'
-              onClick={() =>
-                http.post(`/api/client/servers/${serverId}/power`, {
-                  signal: 'stop',
-                })
-              }
-              style={{
-                background: 'rgba(244,135,113,.2)',
-                color: '#f48771',
-              }}
-              title='Stop Server'
-            >
-              <i className='bi bi-stop-fill'></i>
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className='ide-tabbar'>
+          ))
+        ) : (
           <span className='ide-tabbar__hint'>Open a file from the explorer to start editing</span>
-          <div className='ide-tabbar__spacer' />
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '0 12px',
-              borderLeft: '1px solid var(--ide-border)',
-            }}
-          >
-            <button
-              className='ide-statusbar__save-btn'
-              onClick={onToggleMode}
-              style={{
-                background: 'var(--ide-panel-bg)',
-                border: '1px solid var(--ide-border)',
-                marginRight: '8px',
-              }}
-              title='Switch to Classic Mode'
-            >
-              <i className='bi bi-box-arrow-right'></i>
-            </button>
-            <button
-              className='ide-statusbar__save-btn'
-              onClick={() =>
-                http.post(`/api/client/servers/${serverId}/power`, {
-                  signal: 'start',
-                })
-              }
-              style={{
-                background: 'rgba(78,201,148,.2)',
-                color: '#4ec994',
-              }}
-              title='Start Server'
-            >
-              <i className='bi bi-play-fill'></i>
-            </button>
-            <button
-              className='ide-statusbar__save-btn'
-              onClick={() =>
-                http.post(`/api/client/servers/${serverId}/power`, {
-                  signal: 'restart',
-                })
-              }
-              style={{
-                background: 'rgba(52,101,164,.2)',
-                color: '#729fcf',
-              }}
-              title='Restart Server'
-            >
-              <i className='bi bi-arrow-clockwise'></i>
-            </button>
-            <button
-              className='ide-statusbar__save-btn'
-              onClick={() =>
-                http.post(`/api/client/servers/${serverId}/power`, {
-                  signal: 'stop',
-                })
-              }
-              style={{
-                background: 'rgba(244,135,113,.2)',
-                color: '#f48771',
-              }}
-              title='Stop Server'
-            >
-              <i className='bi bi-stop-fill'></i>
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+        <RightActions />
+      </div>
 
       {/* ── Editor area ── */}
       <div className='ide-editor-area'>
@@ -517,8 +358,7 @@ const FileEditorTabs: React.FC<Props> = ({
             <i className='bi bi-file-earmark-binary ide-editor-incompatible__icon'></i>
             <h2 className='ide-editor-incompatible__title'>Binary file</h2>
             <p className='ide-editor-incompatible__desc'>
-              <strong>{activeTab.name}</strong> is a binary file ({getBinaryTypeLabel(activeTab.name)}) and cannot be
-              displayed.
+              <strong>{activeTab.name}</strong> is a binary file ({getBinaryTypeLabel(activeTab.name)}) and cannot be displayed.
             </p>
           </div>
         )}
@@ -530,9 +370,7 @@ const FileEditorTabs: React.FC<Props> = ({
           <span className='ide-statusbar__path'>{activeTab.path}</span>
           <div className='ide-statusbar__right'>
             {saveStatus === 'ok' && <span className='ide-statusbar__badge ide-statusbar__badge--ok'>Saved</span>}
-            {saveStatus === 'err' && (
-              <span className='ide-statusbar__badge ide-statusbar__badge--err'>Save failed</span>
-            )}
+            {saveStatus === 'err' && <span className='ide-statusbar__badge ide-statusbar__badge--err'>Save failed</span>}
             {activeTab.isDirty && !isBinary && (
               <button className='ide-statusbar__save-btn' onClick={doSave} disabled={isSaving}>
                 <i className='bi bi-floppy'></i>
@@ -540,11 +378,7 @@ const FileEditorTabs: React.FC<Props> = ({
               </button>
             )}
             <span className='ide-statusbar__lang'>{lang}</span>
-            {!isBinary && (
-              <span className='ide-statusbar__lines'>
-                {lineCount} {lineCount === 1 ? 'line' : 'lines'}
-              </span>
-            )}
+            {!isBinary && <span className='ide-statusbar__lines'>{lineCount} {lineCount === 1 ? 'line' : 'lines'}</span>}
           </div>
         </div>
       )}

@@ -8,8 +8,8 @@ info:
   icon: "icon.png"
 
 admin:
-  view: "admin.blade.php"
+  view: "admin/admin.blade.php"
 
 dashboard:
-  css: "resources/scripts/ide-filemanager.css"
-  components: "resources/scripts"
+  css: "client/ide-filemanager.css"
+  components: "client/components"

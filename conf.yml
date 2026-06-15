@@ -2,7 +2,7 @@ info:
   name: "IDE File Manager"
   identifier: "idefilemanager"
   description: "IDE interface"
-  version: "1.2.0"
+  version: "1.4.0"
   target: "~beta-2026-05"
   author: "g_fly"
   icon: "icon.png"

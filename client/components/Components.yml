@@ -1,4 +1,10 @@
 Navigation:
   Routes:
     - { Name: 'IDE', Path: '/ide', Type: 'server', Component: 'IdeFileManager', AdminOnly: 'false' }
-    - { Name: '', Path: '/files', Type: 'server', Component: 'IdeFilesWrapper', AdminOnly: 'false' }
+  NavigationItem:
+    - { Name: 'IDE Editor', Path: '/ide', Type: 'server', Component: 'IdeNavLink', AdminOnly: 'false' }
+
+Server:
+  Files:
+    Browse:
+      FileButtons: "IdeFilesWrapper"

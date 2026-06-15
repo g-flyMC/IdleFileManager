@@ -1,54 +1,29 @@
 import React from 'react';
-import { useParams, useHistory } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+import { Button } from '@/components/elements/button/index';
+import { ServerContext } from '@/state/server';
 
-interface Props {
-  children?: React.ReactNode;
-}
-
-const IdeFilesWrapper: React.FC<Props> = ({ children }) => {
-  const { id: serverId } = useParams<{ id: string }>();
-  const history = useHistory();
-
-  return (
-    <div style={{ position: 'relative' }}>
-      {/* Bouton fixe top-right, hors du flux ptero */}
-      <button
-        onClick={() => history.push(`/server/${serverId}/ide`)}
-        style={{
-          position: 'fixed',
-          top: '14px',
-          right: '20px',
-          zIndex: 9999,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '7px',
-          background: 'linear-gradient(135deg, #0078d4 0%, #005fa3 100%)',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '8px 16px',
-          fontSize: '13px',
-          fontWeight: 600,
-          fontFamily: 'Inter, sans-serif',
-          cursor: 'pointer',
-          boxShadow: '0 2px 10px rgba(0,120,212,0.45)',
-          transition: 'transform 0.12s, box-shadow 0.12s',
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)';
-          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 16px rgba(0,120,212,0.55)';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.transform = '';
-          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 10px rgba(0,120,212,0.45)';
-        }}
-      >
-        <i className='bi bi-code-slash'></i>
-        Open IDE
-      </button>
-      {children}
-    </div>
-  );
+export default () => {
+    const id = ServerContext.useStoreState((state) => state.server.data!.id);
+    return (
+        <NavLink to={`/server/${id}/ide`}>
+            <Button.Text>
+                <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    style={{ height: '1.25rem', width: '1.25rem', marginRight: '0.25rem' }}
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                >
+                    <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4'
+                    />
+                </svg>
+                Open IDE
+            </Button.Text>
+        </NavLink>
+    );
 };
-
-export default IdeFilesWrapper;
